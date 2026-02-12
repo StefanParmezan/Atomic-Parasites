@@ -2,6 +2,7 @@ package com.stefanparmezan.atomic_parasites.init;
 
 import com.stefanparmezan.atomic_parasites.armor.EngineerArmor;
 import com.stefanparmezan.atomic_parasites.items.CrashQuestIcon;
+import com.stefanparmezan.atomic_parasites.items.EngineerToolCase;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -18,6 +19,7 @@ public class InitItems {
     public static final List<Item> ITEMS = new ArrayList<>();
 
     public static final Item CRASH_QUEST_ICON = new CrashQuestIcon("crash_quest_icon");
+    public static final Item ENGINEER_TOOL_CASE = new EngineerToolCase("engineer_tool_case");
 
     public static ItemArmor.ArmorMaterial ARMOR_MATERIAL_ENGINEER = Objects.requireNonNull(
             EnumHelper.addArmorMaterial(
@@ -36,4 +38,5 @@ public class InitItems {
             ENGINEER_PANTS = new EngineerArmor("engineer_pants", ARMOR_MATERIAL_ENGINEER, 2, EntityEquipmentSlot.LEGS),
             ENGINEER_JACKET = new EngineerArmor("engineer_jacket", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.CHEST),
             ENGINEER_WELDER_MASK = new EngineerArmor("engineer_welder_mask", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.HEAD);
+
 }

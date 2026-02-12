@@ -6,8 +6,8 @@ import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
 import com.stefanparmezan.atomic_parasites.utils.interfaces.IHasModel;
 import net.minecraft.item.Item;
 
-public class CrashQuestIcon extends Item implements IHasModel {
-    public CrashQuestIcon(String name) {
+public class EngineerToolCase extends Item implements IHasModel {
+    public EngineerToolCase(String name) {
         setRegistryName(name);
         setTranslationKey(AtomicParasitesInfo.TRANSLATION_KEY + name);
         InitItems.ITEMS.add(this);
@@ -17,8 +17,6 @@ public class CrashQuestIcon extends Item implements IHasModel {
 
     @Override
     public void registerModels() {
-        AtomicParasites.proxy.registerItemRenderer(this, 0, "inventory");
+
     }
-
-
 }

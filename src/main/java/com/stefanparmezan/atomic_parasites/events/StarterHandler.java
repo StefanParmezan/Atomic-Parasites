@@ -1,0 +1,34 @@
+package com.stefanparmezan.atomic_parasites.events;
+     // ваш главный класс мода
+import com.stefanparmezan.atomic_parasites.init.InitItems;
+import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+@Mod.EventBusSubscriber(modid = AtomicParasitesInfo.MOD_ID)
+public class StarterHandler {
+
+    @SubscribeEvent
+    public static void onPlayerJoinWorld(EntityJoinWorldEvent event) {
+        if (event.getWorld().isRemote) return;
+
+        if (!(event.getEntity() instanceof EntityPlayer)) return;
+
+        EntityPlayer player = (EntityPlayer) event.getEntity();
+
+        if (!player.getEntityData().getBoolean("atomic_parasites:armor_received")) {
+            //0 — ботинки, 1 — поножи, 2 — нагрудник, 3 — шлем
+            player.inventory.armorInventory.set(3, new ItemStack(InitItems.ENGINEER_WELDER_MASK));
+            player.inventory.armorInventory.set(2, new ItemStack(InitItems.ENGINEER_JACKET));
+            player.inventory.armorInventory.set(1, new ItemStack(InitItems.ENGINEER_PANTS));
+            player.inventory.armorInventory.set(0, new ItemStack(InitItems.ENGINEER_BOOTS));
+            player.inventory.addItemStackToInventory(new ItemStack(InitItems.ENGINEER_TOOL_CASE));
+
+            // 5. Устанавливаем флаг — броня уже выдана
+            player.getEntityData().setBoolean("atomic_parasites:armor_received", true);
+        }
+    }
+}

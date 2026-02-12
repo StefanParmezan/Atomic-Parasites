@@ -21,12 +21,13 @@ compileJava {
 repositories {
 	maven {
 		url = "https://maven.minecraftforge.net/"
+        url = "https://cursemaven.com"
 	}
 }
 
 dependencies {
 	minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2859"
-
+    implementation fg.deobf("curse.maven:hbms-nuclear-tech-mod-extended-edition-708939:7234087")
 }
 
 minecraft {
