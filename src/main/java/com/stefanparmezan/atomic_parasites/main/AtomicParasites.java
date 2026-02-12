@@ -1,6 +1,9 @@
-package com.stefanparmezan.main;
+package com.stefanparmezan.atomic_parasites.main;
 
-import com.stefanparmezan.proxy.CommonProxy;
+import com.stefanparmezan.atomic_parasites.init.InitItems;
+import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -37,4 +40,11 @@ public class AtomicParasites {
     public static void postInit(FMLPostInitializationEvent postInit){
         LOGGER.info("\\u001B[34m" + "Started postInit");
     }
+
+    public static CreativeTabs creativeTab = new CreativeTabs("Atomic Parasites") {
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(InitItems.CRASH_QUEST_ICON);
+        }
+    };
 }

@@ -1,4 +1,4 @@
-package com.stefanparmezan.proxy;
+package com.stefanparmezan.atomic_parasites.proxy;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;

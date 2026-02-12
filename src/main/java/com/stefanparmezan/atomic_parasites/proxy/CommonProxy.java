@@ -1,4 +1,4 @@
-package com.stefanparmezan.proxy;
+package com.stefanparmezan.atomic_parasites.proxy;
 
 import net.minecraft.item.Item;
 
