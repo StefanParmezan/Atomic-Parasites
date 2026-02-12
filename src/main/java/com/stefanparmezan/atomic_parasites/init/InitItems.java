@@ -32,8 +32,8 @@ public class InitItems {
     ).setRepairItem(new ItemStack(Items.LEATHER));
 
     public static Item
-            ENGINEER_HELMET = new EngineerArmor("engineer_welder_mask", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.HEAD),
-            ENGINEER_CHESTPLATE = new EngineerArmor("engineer_jacket", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.CHEST),
-            ENGINEER_LEGGINGS = new EngineerArmor("engineer_pants", ARMOR_MATERIAL_ENGINEER, 2, EntityEquipmentSlot.LEGS),
-            ENGINEER_BOOTS = new EngineerArmor("engineer_boots", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.FEET);
+            ENGINEER_BOOTS = new EngineerArmor("engineer_boots", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.FEET),
+            ENGINEER_PANTS = new EngineerArmor("engineer_pants", ARMOR_MATERIAL_ENGINEER, 2, EntityEquipmentSlot.LEGS),
+            ENGINEER_JACKET = new EngineerArmor("engineer_jacket", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.CHEST),
+            ENGINEER_WELDER_MASK = new EngineerArmor("engineer_welder_mask", ARMOR_MATERIAL_ENGINEER, 1, EntityEquipmentSlot.HEAD);
 }
