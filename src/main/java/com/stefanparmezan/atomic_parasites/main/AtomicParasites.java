@@ -3,6 +3,7 @@ package com.stefanparmezan.atomic_parasites.main;
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -44,7 +45,7 @@ public class AtomicParasites {
     public static CreativeTabs creativeTab = new CreativeTabs("Atomic Parasites") {
         @Override
         public ItemStack createIcon() {
-            return new ItemStack(InitItems.CRASH_QUEST_ICON);
+            return new ItemStack(Items.NETHER_WART);
         }
     };
 }

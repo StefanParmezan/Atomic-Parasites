@@ -11,9 +11,9 @@ public class CrashQuestIcon extends Item implements IHasModel {
     public CrashQuestIcon(String name) {
         setRegistryName(name);
         setTranslationKey(AtomicParasitesInfo.TRANSLATION_KEY + name);
-
         InitItems.ITEMS.add(this);
         AtomicParasites.LOGGER.info("Items list: {}", InitItems.ITEMS);
+        setCreativeTab(AtomicParasites.creativeTab);
     }
 
     @Override
