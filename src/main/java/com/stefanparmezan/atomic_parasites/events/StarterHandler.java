@@ -1,20 +1,28 @@
 package com.stefanparmezan.atomic_parasites.events;
-     // ваш главный класс мода
+
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Mod.EventBusSubscriber(modid = AtomicParasitesInfo.MOD_ID)
 public class StarterHandler {
 
+    // Копируем флаг из умершего игрока в нового при возрождении
+    @SubscribeEvent
+    public static void onPlayerClone(PlayerEvent.Clone event) {
+        boolean flag = event.getOriginal().getEntityData().getBoolean("atomic_parasites:armor_received");
+        event.getEntityPlayer().getEntityData().setBoolean("atomic_parasites:armor_received", flag);
+    }
+
+    // Выдаём предметы только если флаг ещё не установлен
     @SubscribeEvent
     public static void onPlayerJoinWorld(EntityJoinWorldEvent event) {
         if (event.getWorld().isRemote) return;
-
         if (!(event.getEntity() instanceof EntityPlayer)) return;
 
         EntityPlayer player = (EntityPlayer) event.getEntity();
