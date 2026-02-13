@@ -2,5 +2,10 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "atomic_parasites:items/engineer_tool_case"
-  }
+  },
+  "overrides": [
+    { "predicate": { "damage": 0.0 }, "model": "atomic_parasites:item/engineer_tool_case_0" },
+    { "predicate": { "damage": 0.5 }, "model": "atomic_parasites:item/engineer_tool_case_45" },
+    { "predicate": { "damage": 1.0 }, "model": "atomic_parasites:item/engineer_tool_case_90" }
+  ]
 }

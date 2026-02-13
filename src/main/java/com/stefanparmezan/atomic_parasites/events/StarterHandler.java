@@ -20,14 +20,12 @@ public class StarterHandler {
         EntityPlayer player = (EntityPlayer) event.getEntity();
 
         if (!player.getEntityData().getBoolean("atomic_parasites:armor_received")) {
-            //0 — ботинки, 1 — поножи, 2 — нагрудник, 3 — шлем
             player.inventory.armorInventory.set(3, new ItemStack(InitItems.ENGINEER_WELDER_MASK));
             player.inventory.armorInventory.set(2, new ItemStack(InitItems.ENGINEER_JACKET));
             player.inventory.armorInventory.set(1, new ItemStack(InitItems.ENGINEER_PANTS));
             player.inventory.armorInventory.set(0, new ItemStack(InitItems.ENGINEER_BOOTS));
             player.inventory.addItemStackToInventory(new ItemStack(InitItems.ENGINEER_TOOL_CASE));
 
-            // 5. Устанавливаем флаг — броня уже выдана
             player.getEntityData().setBoolean("atomic_parasites:armor_received", true);
         }
     }

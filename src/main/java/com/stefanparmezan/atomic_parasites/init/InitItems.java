@@ -20,6 +20,7 @@ public class InitItems {
 
     public static final Item CRASH_QUEST_ICON = new CrashQuestIcon("crash_quest_icon");
     public static final Item ENGINEER_TOOL_CASE = new EngineerToolCase("engineer_tool_case");
+    
 
     public static ItemArmor.ArmorMaterial ARMOR_MATERIAL_ENGINEER = Objects.requireNonNull(
             EnumHelper.addArmorMaterial(
