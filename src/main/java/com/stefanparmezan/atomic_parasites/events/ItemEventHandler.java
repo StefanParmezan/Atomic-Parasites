@@ -4,8 +4,10 @@ import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -15,7 +17,7 @@ import com.hbm.items.ModItems;
 @Mod.EventBusSubscriber(modid = AtomicParasitesInfo.MOD_ID)
 public class ItemEventHandler {
 
-    private static int ticksAnimationPeriods = 14;
+    private static int ticksAnimationPeriods = 18;
 
     @SubscribeEvent
     public static void onToolBoxRightClick(PlayerInteractEvent.RightClickItem event) {
@@ -32,6 +34,10 @@ public class ItemEventHandler {
     }
 
     private static void startAnimation(EntityPlayer player, ItemStack stack, long currentTime) {
+        // Воспроизводим звук открытия железной двери
+        player.world.playSound(null, player.posX, player.posY, player.posZ,
+                SoundEvents.BLOCK_IRON_DOOR_OPEN, SoundCategory.PLAYERS, 1.0f, 1.0f);
+
         // Первый этап: damage = 1 (модель _45)
         stack.setItemDamage(1);
 
@@ -62,6 +68,8 @@ public class ItemEventHandler {
 
             if (damage == 1) {
                 // Переход ко второму этапу: damage = 2 (модель _90)
+                player.world.playSound(null, player.posX, player.posY, player.posZ,
+                        SoundEvents.BLOCK_IRON_DOOR_OPEN, SoundCategory.PLAYERS, 1.0f, 1.0f);
                 held.setItemDamage(2);
                 animTag.setLong("nextStage", currentTime + ticksAnimationPeriods);
                 held.getTagCompound().setTag("animation", animTag);
@@ -70,6 +78,8 @@ public class ItemEventHandler {
                 // Анимация завершена – выдаём предметы и убираем один ящик
                 // Сначала сбрасываем состояние для оставшихся предметов в стаке
                 held.setItemDamage(0);
+                player.world.playSound(null, player.posX, player.posY, player.posZ,
+                        SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f);
                 held.getTagCompound().removeTag("animation");
                 if (held.getTagCompound().isEmpty()) {
                     held.setTagCompound(null);
