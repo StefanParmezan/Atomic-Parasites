@@ -1,5 +1,6 @@
 package com.stefanparmezan.atomic_parasites.main;
 
+import com.stefanparmezan.atomic_parasites.events.PlayerBlockEventHandler;
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
 import net.minecraft.creativetab.CreativeTabs;
@@ -34,6 +35,7 @@ public class AtomicParasites {
 
     @Mod.EventHandler
     public static void init(FMLInitializationEvent init){
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(PlayerBlockEventHandler.class);
         LOGGER.info("\\u001B[34m" + "Started init");
     }
 

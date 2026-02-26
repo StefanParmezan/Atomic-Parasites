@@ -2,6 +2,7 @@ package com.stefanparmezan.atomic_parasites.events;
 
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
+import com.stefanparmezan.atomic_parasites.utils.helpers.HbmHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -33,6 +34,18 @@ public class StarterHandler {
             player.inventory.armorInventory.set(1, new ItemStack(InitItems.ENGINEER_PANTS));
             player.inventory.armorInventory.set(0, new ItemStack(InitItems.ENGINEER_BOOTS));
             player.inventory.addItemStackToInventory(new ItemStack(InitItems.ENGINEER_TOOL_CASE));
+
+            Object gun = HbmHelper.getHbmItem("gun_fireext");
+            Object ammo = HbmHelper.getHbmItem("ammo_fireext");
+
+
+            if (gun != null) {
+                player.inventory.addItemStackToInventory(((net.minecraft.item.Item) gun).getDefaultInstance());
+            }
+
+            if (ammo != null) {
+                player.inventory.addItemStackToInventory(((net.minecraft.item.Item) ammo).getDefaultInstance());
+            }
 
             player.getEntityData().setBoolean("atomic_parasites:armor_received", true);
         }

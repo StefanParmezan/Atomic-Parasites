@@ -1,7 +1,6 @@
 package com.stefanparmezan.atomic_parasites.events;
 
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
@@ -20,7 +19,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 public class SpawnStructureHandler {
 
     private static final String DATA_NAME = AtomicParasitesInfo.MOD_ID + "_pod_placed";
-    private static final String BARREL_BLOCK_NAME = "hbm:barrel_corroded"; // Полное название блока
+    private static final String SPAWN_BLOCK_NAME = "hbm:hazmat"; // Полное название блока
 
     public static class ModWorldData extends WorldSavedData {
         private boolean podPlaced = false;
@@ -142,9 +141,6 @@ public class SpawnStructureHandler {
         return count == 0 ? 64 : total / count;
     }
 
-    /**
-     * Ищет ржавую бочку (hbm:barrel_coroded) в структуре
-     */
     private static BlockPos findBarrel(WorldServer world, BlockPos start, BlockPos size) {
         for (int x = 0; x < size.getX(); x++) {
             for (int y = 0; y < size.getY(); y++) {
@@ -155,7 +151,7 @@ public class SpawnStructureHandler {
                     net.minecraft.block.Block block = world.getBlockState(check).getBlock();
                     net.minecraft.util.ResourceLocation registryName = block.getRegistryName();
 
-                    if (registryName != null && registryName.toString().equals(BARREL_BLOCK_NAME)) {
+                    if (registryName != null && registryName.toString().equals(SPAWN_BLOCK_NAME)) {
                         return check;
                     }
                 }

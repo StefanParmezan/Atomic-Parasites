@@ -2,6 +2,7 @@ package com.stefanparmezan.atomic_parasites.events;
 
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
+import com.stefanparmezan.atomic_parasites.utils.helpers.HbmHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
@@ -12,8 +13,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import com.hbm.items.ModItems;
-
 @Mod.EventBusSubscriber(modid = AtomicParasitesInfo.MOD_ID)
 public class ItemEventHandler {
 
@@ -86,12 +85,10 @@ public class ItemEventHandler {
                 }
 
                 // Выдаём предметы HBM
-                player.inventory.addItemStackToInventory(new ItemStack(Items.IRON_PICKAXE));
-                player.inventory.addItemStackToInventory(new ItemStack(ModItems.crowbar));
-                player.inventory.addItemStackToInventory(new ItemStack(ModItems.wrench));
-                player.inventory.addItemStackToInventory(new ItemStack(ModItems.template_folder));
-                player.inventory.addItemStackToInventory(new ItemStack(ModItems.static_sandwich));
-                player.inventory.addItemStackToInventory(new ItemStack(ModItems.ducttape));
+                player.inventory.addItemStackToInventory(HbmHelper.getHbmItem("wrench").getDefaultInstance());
+                player.inventory.addItemStackToInventory(HbmHelper.getHbmItem("template_folder").getDefaultInstance());
+                player.inventory.addItemStackToInventory(HbmHelper.getHbmItem("twinkie").getDefaultInstance());
+                player.inventory.addItemStackToInventory(HbmHelper.getHbmItem("geiger_counter").getDefaultInstance());;
 
                 // Уменьшаем количество использованных ящиков на 1
                 held.shrink(1);

@@ -27,7 +27,6 @@ repositories {
 
 dependencies {
 	minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2859"
-    implementation fg.deobf("curse.maven:hbms-nuclear-tech-mod-extended-edition-708939:7234087")
     implementation fg.deobf("curse.maven:mrcrayfish-furniture-mod-55438:3865259")
 }
 
