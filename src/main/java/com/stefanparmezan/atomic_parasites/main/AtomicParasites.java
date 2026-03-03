@@ -4,7 +4,6 @@ import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
 import com.stefanparmezan.atomic_parasites.events.FireBreakingEventHandler;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
 import com.stefanparmezan.atomic_parasites.utils.handlers.FaceOverlayHandler;
-import com.stefanparmezan.atomic_parasites.utils.handlers.PotionEffectHandler;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -45,7 +44,6 @@ public class AtomicParasites {
         MinecraftForge.EVENT_BUS.register(FireBreakingEventHandler.class);
         MinecraftForge.EVENT_BUS.register(ParasitesPhaseEventHandler.class);
         MinecraftForge.EVENT_BUS.register(new FaceOverlayHandler());
-        MinecraftForge.EVENT_BUS.register(new PotionEffectHandler());
 
         LOGGER.info("\u001B[34mEvent handlers registered");
     }
