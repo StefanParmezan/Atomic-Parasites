@@ -1,4 +1,4 @@
-package com.stefanparmezan.atomic_parasites.utils.handlers;
+package com.stefanparmezan.atomic_parasites.player_avatar;
 
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.init.MobEffects;
@@ -11,7 +11,7 @@ public class BloodEffectManager {
 
     public static final Random RAND = new Random();
 
-    private static final int MAX_SPOTS = 10;
+    private static final int MAX_SPOTS = 3;
     private static final int SPOT_LIFETIME = 400;
 
     private static float lastHealth = -1;

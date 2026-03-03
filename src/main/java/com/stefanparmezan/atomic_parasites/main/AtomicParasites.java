@@ -3,7 +3,7 @@ package com.stefanparmezan.atomic_parasites.main;
 import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
 import com.stefanparmezan.atomic_parasites.events.FireBreakingEventHandler;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
-import com.stefanparmezan.atomic_parasites.utils.handlers.FaceOverlayHandler;
+import com.stefanparmezan.atomic_parasites.player_avatar.FaceOverlayHandler;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;

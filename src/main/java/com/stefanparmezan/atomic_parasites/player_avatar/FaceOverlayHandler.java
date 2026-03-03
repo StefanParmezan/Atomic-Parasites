@@ -1,4 +1,4 @@
-package com.stefanparmezan.atomic_parasites.utils.handlers;
+package com.stefanparmezan.atomic_parasites.player_avatar;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
@@ -9,6 +9,8 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import com.stefanparmezan.atomic_parasites.player_avatar.HealthOverlayManager;
 
 public class FaceOverlayHandler {
 
@@ -23,12 +25,12 @@ public class FaceOverlayHandler {
     private static final float FACE_SRC_SIZE = 8.0f;
     private static final float SKIN_TEX_SIZE = 64.0f;
 
-    // Цвет воды RGB(43, 59, 204)
-    private static final int WATER_COLOR = 0x002B3BCC;
-    // Цвет крови
-    private static final int BLOOD_COLOR = 0x00AA0000;
-    // Цвет ожога
-    private static final int BURN_COLOR = 0x00555555;
+    // Размер текстуры оверлея (8x8 пикселей)
+    private static final int OVERLAY_TEX_SIZE = 8;
+
+    private static final int WATER_COLOR = 0x802B3BCC;
+    private static final int BLOOD_COLOR = 0xFFAA0000;
+    private static final int BURN_COLOR = 0xFF555555;
 
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
@@ -44,9 +46,9 @@ public class FaceOverlayHandler {
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
 
-        // Обновляем менеджеры
         BloodEffectManager.update(player);
         WaterEffectManager.update(player);
+        HealthOverlayManager.update(player);
 
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
@@ -69,32 +71,34 @@ public class FaceOverlayHandler {
                 GlStateManager.DestFactor.ZERO
         );
 
+        // 1. Рисуем базовое лицо (скин игрока)
         mc.getTextureManager().bindTexture(skin);
-
-        // 1. Рисуем базовое лицо
         drawBaseFace(x, y);
 
-        // 2. Отравление (зелёный оверлей)
+        // 2. Вода — синий оверлей
+        if (WaterEffectManager.isPlayerInWater()) {
+            Gui.drawRect(x, y, x + FACE_SIZE, y + FACE_SIZE, WATER_COLOR);
+        }
+
+        // 3. Отравление — зелёный оверлей
         PotionEffect poison = player.getActivePotionEffect(MobEffects.POISON);
         if (poison != null) {
             drawColoredOverlay(x, y, FACE_SIZE, 0x0000FF00, poison.getAmplifier());
         }
 
-        // 3. Иссушение (фиолетовый оверлей)
+        // 4. Иссушение — фиолетовый оверлей
         PotionEffect wither = player.getActivePotionEffect(MobEffects.WITHER);
         if (wither != null) {
             drawColoredOverlay(x, y, FACE_SIZE, 0x00880088, wither.getAmplifier());
         }
 
-        // 4. Вода (синий оверлей RGB 43, 59, 204)
-        if (WaterEffectManager.isPlayerInWater()) {
-            int alpha = 120;
-            int color = (alpha << 24) | WATER_COLOR;
-            Gui.drawRect(x, y, x + FACE_SIZE, y + FACE_SIZE, color);
-        }
-
-        // 5. Кровь и ожоги (отдельные пиксели)
+        // 5. Кровь и ожоги — отдельные пиксели
         drawEffectSpots(x, y);
+
+        // 6. Оверлей здоровья — плавный переход между текстурами
+        if (HealthOverlayManager.shouldRender()) {
+            drawHealthOverlay(x, y, FACE_SIZE);
+        }
 
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
@@ -123,10 +127,6 @@ public class FaceOverlayHandler {
         Gui.drawRect(x, y, x + faceSize, y + faceSize, color);
     }
 
-    /**
-     * Рисует кровь и ожоги (отдельные пиксели)
-     * ИСПРАВЛЕНО: все Random.nextInt() защищены через Math.max(1, ...)
-     */
     private void drawEffectSpots(int faceX, int faceY) {
         for (BloodEffectManager.EffectSpot spot : BloodEffectManager.getActiveSpots()) {
             int pixelX = faceX + (spot.gridX * PIXEL_SIZE);
@@ -144,5 +144,41 @@ public class FaceOverlayHandler {
 
             Gui.drawRect(pixelX, pixelY, pixelX + PIXEL_SIZE, pixelY + PIXEL_SIZE, spotColor);
         }
+    }
+
+    /**
+     * Рисует оверлей здоровья с плавным переходом прозрачности
+     */
+    private void drawHealthOverlay(int x, int y, int displaySize) {
+        ResourceLocation overlay = HealthOverlayManager.getCurrentOverlay();
+        if (overlay == null) return;
+
+        float progress = HealthOverlayManager.getTransitionProgress();
+
+        // Привязываем текстуру оверлея
+        Minecraft.getMinecraft().getTextureManager().bindTexture(overlay);
+
+        // Сохраняем состояние OpenGL
+        GlStateManager.pushMatrix();
+        GlStateManager.enableBlend();
+        GlStateManager.disableAlpha();
+
+        // Применяем прозрачность на основе прогресса перехода
+        GlStateManager.color(1.0f, 1.0f, 1.0f, progress);
+
+        // Рисуем текстуру оверлея (8x8 -> displaySize x displaySize)
+        Gui.drawScaledCustomSizeModalRect(
+                x, y,
+                0.0f, 0.0f,                    // UV координаты (начало текстуры)
+                OVERLAY_TEX_SIZE, OVERLAY_TEX_SIZE,  // Размер области на текстуре (8x8)
+                displaySize, displaySize,      // Размер отображения на экране
+                OVERLAY_TEX_SIZE, OVERLAY_TEX_SIZE   // Полный размер текстуры (8x8)
+        );
+
+        // Восстанавливаем состояние
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlpha();
+        GlStateManager.popMatrix();
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

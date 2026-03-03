@@ -1,4 +1,4 @@
-package com.stefanparmezan.atomic_parasites.utils.handlers;
+package com.stefanparmezan.atomic_parasites.player_avatar;
 
 import net.minecraft.client.entity.AbstractClientPlayer;
 
