@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.init.MobEffects;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -12,6 +14,7 @@ public class FaceOverlayHandler {
 
     private static final int FACE_SIZE = 32;
     private static final int MARGIN = 6;
+    private static final int PIXEL_SIZE = FACE_SIZE / 8;
 
     private static final float FACE_U = 8.0f;
     private static final float FACE_V = 8.0f;
@@ -19,6 +22,13 @@ public class FaceOverlayHandler {
     private static final float HAT_V = 8.0f;
     private static final float FACE_SRC_SIZE = 8.0f;
     private static final float SKIN_TEX_SIZE = 64.0f;
+
+    // Цвет воды RGB(43, 59, 204)
+    private static final int WATER_COLOR = 0x002B3BCC;
+    // Цвет крови
+    private static final int BLOOD_COLOR = 0x00AA0000;
+    // Цвет ожога
+    private static final int BURN_COLOR = 0x00555555;
 
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
@@ -33,7 +43,10 @@ public class FaceOverlayHandler {
         }
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
+
+        // Обновляем менеджеры
         BloodEffectManager.update(player);
+        WaterEffectManager.update(player);
 
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
@@ -45,7 +58,6 @@ public class FaceOverlayHandler {
         int y = hotbarTop - 10;
 
         ResourceLocation skin = player.getLocationSkin();
-        FaceColorModifier.ColorResult colors = FaceColorModifier.calculate(player);
 
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -59,30 +71,34 @@ public class FaceOverlayHandler {
 
         mc.getTextureManager().bindTexture(skin);
 
-        if (colors.hasEffect) {
-            drawFaceWithVariation(x, y, colors);
-        } else {
-            drawBaseFace(x, y);
+        // 1. Рисуем базовое лицо
+        drawBaseFace(x, y);
+
+        // 2. Отравление (зелёный оверлей)
+        PotionEffect poison = player.getActivePotionEffect(MobEffects.POISON);
+        if (poison != null) {
+            drawColoredOverlay(x, y, FACE_SIZE, 0x0000FF00, poison.getAmplifier());
         }
 
-        drawBloodSpots(x, y, FACE_SIZE);
+        // 3. Иссушение (фиолетовый оверлей)
+        PotionEffect wither = player.getActivePotionEffect(MobEffects.WITHER);
+        if (wither != null) {
+            drawColoredOverlay(x, y, FACE_SIZE, 0x00880088, wither.getAmplifier());
+        }
+
+        // 4. Вода (синий оверлей RGB 43, 59, 204)
+        if (WaterEffectManager.isPlayerInWater()) {
+            int alpha = 120;
+            int color = (alpha << 24) | WATER_COLOR;
+            Gui.drawRect(x, y, x + FACE_SIZE, y + FACE_SIZE, color);
+        }
+
+        // 5. Кровь и ожоги (отдельные пиксели)
+        drawEffectSpots(x, y);
 
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.popMatrix();
-    }
-
-    private void drawFaceWithVariation(int x, int y, FaceColorModifier.ColorResult colors) {
-        GlStateManager.color(colors.baseR, colors.baseG, colors.baseB, 1.0f);
-        drawBaseFace(x, y);
-
-        GlStateManager.color(colors.darkR, colors.darkG, colors.darkB, 0.5f);
-        drawFaceWithUVOffset(x, y, 0.5f, 0.5f);
-
-        GlStateManager.color(colors.darkR, colors.darkG, colors.darkB, 0.3f);
-        drawFaceWithUVOffset(x, y, -0.5f, 0.5f);
-
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     private void drawBaseFace(int x, int y) {
@@ -100,71 +116,33 @@ public class FaceOverlayHandler {
         );
     }
 
-    private void drawFaceWithUVOffset(int x, int y, float uOffset, float vOffset) {
-        Gui.drawScaledCustomSizeModalRect(
-                x, y,
-                FACE_U + uOffset, FACE_V + vOffset,
-                (int) FACE_SRC_SIZE, (int) FACE_SRC_SIZE,
-                FACE_SIZE, FACE_SIZE,
-                SKIN_TEX_SIZE, SKIN_TEX_SIZE
-        );
-        Gui.drawScaledCustomSizeModalRect(
-                x, y,
-                HAT_U + uOffset, HAT_V + vOffset,
-                (int) FACE_SRC_SIZE, (int) FACE_SRC_SIZE,
-                FACE_SIZE, FACE_SIZE,
-                SKIN_TEX_SIZE, SKIN_TEX_SIZE
-        );
+    private void drawColoredOverlay(int x, int y, int faceSize, int baseColor, int amplifier) {
+        float intensity = Math.min(1.0f, 0.4f + amplifier * 0.15f);
+        int alpha = (int) (intensity * 0.5f * 255);
+        int color = (alpha << 24) | (baseColor & 0x00FFFFFF);
+        Gui.drawRect(x, y, x + faceSize, y + faceSize, color);
     }
 
-    private void drawBloodSpots(int faceX, int faceY, int faceSize) {
-        for (BloodEffectManager.BloodSpot spot : BloodEffectManager.getActiveSpots()) {
-            int spotX = faceX + (int) (spot.x * faceSize);
-            int spotY = faceY + (int) (spot.y * faceSize);
-            int spotPxSize = (int) (spot.size * 3.0f);
+    /**
+     * Рисует кровь и ожоги (отдельные пиксели)
+     * ИСПРАВЛЕНО: все Random.nextInt() защищены через Math.max(1, ...)
+     */
+    private void drawEffectSpots(int faceX, int faceY) {
+        for (BloodEffectManager.EffectSpot spot : BloodEffectManager.getActiveSpots()) {
+            int pixelX = faceX + (spot.gridX * PIXEL_SIZE);
+            int pixelY = faceY + (spot.gridY * PIXEL_SIZE);
 
-            // Тёмно-красный цвет (запёкшаяся кровь)
-            // Формат ARGB: Alpha(0xE6) Red(0x88) Green(0x00) Blue(0x00)
-            int bloodColor = 0xE6880000;
+            float opacity = spot.getOpacity();
+            int alpha = (int) (opacity * 255);
 
-            Gui.drawRect(
-                    spotX - spotPxSize / 2,
-                    spotY - spotPxSize / 2,
-                    spotX + spotPxSize / 2,
-                    spotY + spotPxSize / 2,
-                    bloodColor
-            );
-
-            // Хаотичные отростки
-            for (int i = 0; i < spot.points; i++) {
-                int offsetX = (int) (spot.offsetsX[i] * spotPxSize);
-                int offsetY = (int) (spot.offsetsY[i] * spotPxSize);
-                int subSize = spotPxSize / 3 + BloodEffectManager.RAND.nextInt(spotPxSize / 3);
-
-                Gui.drawRect(
-                        spotX + offsetX - subSize / 2,
-                        spotY + offsetY - subSize / 2,
-                        spotX + offsetX + subSize / 2,
-                        spotY + offsetY + subSize / 2,
-                        0xE6660000 // Ещё темнее для краёв
-                );
+            int spotColor;
+            if (spot.type == BloodEffectManager.SpotType.BLOOD) {
+                spotColor = (alpha << 24) | (BLOOD_COLOR & 0x00FFFFFF);
+            } else {
+                spotColor = (alpha << 24) | (BURN_COLOR & 0x00FFFFFF);
             }
 
-            // Брызги
-            if (BloodEffectManager.RAND.nextFloat() < 0.3f) {
-                int splashX = spotX + (BloodEffectManager.RAND.nextInt(spotPxSize * 2) - spotPxSize);
-                int splashY = spotY + (BloodEffectManager.RAND.nextInt(spotPxSize * 2) - spotPxSize);
-                int splashSize = spotPxSize / 4;
-
-                Gui.drawRect(
-                        splashX - splashSize / 2,
-                        splashY - splashSize / 2,
-                        splashX + splashSize / 2,
-                        splashY + splashSize / 2,
-                        0xE6550000 // Очень тёмный
-                );
-            }
+            Gui.drawRect(pixelX, pixelY, pixelX + PIXEL_SIZE, pixelY + PIXEL_SIZE, spotColor);
         }
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

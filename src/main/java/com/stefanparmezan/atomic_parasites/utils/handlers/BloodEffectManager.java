@@ -9,79 +9,83 @@ import java.util.Random;
 
 public class BloodEffectManager {
 
-    // Сделал public, чтобы FaceOverlayHandler мог использовать
     public static final Random RAND = new Random();
 
-    private static final int MAX_BLOOD_SPOTS = 12;
-    private static final float SPOT_MIN_SIZE = 3.0f;
-    private static final float SPOT_MAX_SIZE = 8.0f;
-    private static final float HP_DAMAGE_THRESHOLD = 0.5f;
+    private static final int MAX_SPOTS = 10;
+    private static final int SPOT_LIFETIME = 400;
 
     private static float lastHealth = -1;
-    private static float maxHealth = -1;
-    private static final List<BloodSpot> activeSpots = new ArrayList<>();
+    private static final List<EffectSpot> activeSpots = new ArrayList<>();
 
-    public static class BloodSpot {
-        public final float x;
-        public final float y;
-        public final float size;
-        public final float[] offsetsX;
-        public final float[] offsetsY;
-        public final int points;
+    public enum SpotType {
+        BLOOD,
+        BURN
+    }
 
-        public BloodSpot(float x, float y, float size) {
-            this.x = x;
-            this.y = y;
-            this.size = size;
-            this.points = 5 + RAND.nextInt(4);
-            this.offsetsX = new float[this.points];
-            this.offsetsY = new float[this.points];
-            for (int i = 0; i < this.points; i++) {
-                this.offsetsX[i] = (RAND.nextFloat() - 0.5f) * 0.4f;
-                this.offsetsY[i] = (RAND.nextFloat() - 0.5f) * 0.4f;
-            }
+    public static class EffectSpot {
+        public final int gridX;
+        public final int gridY;
+        public final SpotType type;
+        public int age;
+
+        public EffectSpot(int gridX, int gridY, SpotType type) {
+            this.gridX = gridX;
+            this.gridY = gridY;
+            this.type = type;
+            this.age = 0;
+        }
+
+        public void update() {
+            age++;
+        }
+
+        public boolean isDead() {
+            return age >= SPOT_LIFETIME;
+        }
+
+        public float getOpacity() {
+            if (age < SPOT_LIFETIME * 0.7f) return 1.0f;
+            return 1.0f - ((age - SPOT_LIFETIME * 0.7f) / (SPOT_LIFETIME * 0.3f));
         }
     }
 
     public static void update(AbstractClientPlayer player) {
         float currentHealth = player.getHealth();
-        float currentMaxHealth = player.getMaxHealth();
 
         if (lastHealth < 0) {
             lastHealth = currentHealth;
-            maxHealth = currentMaxHealth;
             return;
         }
 
         float damage = lastHealth - currentHealth;
-
-        // Кровь только при физическом уроне
-        if (damage >= HP_DAMAGE_THRESHOLD && isPhysicalDamage(player)) {
-            spawnBloodSpot();
-        }
-
-        // Удаление крови при отхиле
-        if (currentHealth > lastHealth) {
-            float healed = currentHealth - lastHealth;
-            int spotsToRemove = (int) (healed / currentMaxHealth * MAX_BLOOD_SPOTS);
-            for (int i = 0; i < spotsToRemove && !activeSpots.isEmpty(); i++) {
-                activeSpots.remove(0);
+        if (damage >= 0.5f && isPhysicalDamage(player)) {
+            // ИСПРАВЛЕНО: 2-5 пикселей
+            int pixelCount = 2 + RAND.nextInt(4);
+            for (int i = 0; i < pixelCount; i++) {
+                spawnEffectSpot(SpotType.BLOOD);
             }
         }
 
-        if (currentHealth >= currentMaxHealth * 0.95f) {
-            activeSpots.clear();
+        if (player.isBurning() && RAND.nextFloat() < 0.03f) {
+            // ИСПРАВЛЕНО: 1-3 пикселя
+            int pixelCount = 1 + RAND.nextInt(Math.max(1, 3));
+            for (int i = 0; i < pixelCount; i++) {
+                spawnEffectSpot(SpotType.BURN);
+            }
+        }
+
+        Iterator<EffectSpot> it = activeSpots.iterator();
+        while (it.hasNext()) {
+            EffectSpot spot = it.next();
+            spot.update();
+            if (spot.isDead()) {
+                it.remove();
+            }
         }
 
         lastHealth = currentHealth;
-        maxHealth = currentMaxHealth;
     }
 
-    /**
-     * Проверка: был ли урон физическим.
-     * Если на игроке есть активные эффекты урона (яд, иссушение) или он горит,
-     * считаем урон магическим/экологическим — крови не будет.
-     */
     private static boolean isPhysicalDamage(AbstractClientPlayer player) {
         if (player.isBurning()) return false;
         if (player.getActivePotionEffect(MobEffects.POISON) != null) return false;
@@ -90,23 +94,22 @@ public class BloodEffectManager {
         return true;
     }
 
-    private static void spawnBloodSpot() {
-        if (activeSpots.size() >= MAX_BLOOD_SPOTS) {
+    private static void spawnEffectSpot(SpotType type) {
+        if (activeSpots.size() >= MAX_SPOTS) {
             activeSpots.remove(0);
         }
-        float x = 0.1f + RAND.nextFloat() * 0.8f;
-        float y = 0.1f + RAND.nextFloat() * 0.8f;
-        float size = SPOT_MIN_SIZE + RAND.nextFloat() * (SPOT_MAX_SIZE - SPOT_MIN_SIZE);
-        activeSpots.add(new BloodSpot(x, y, size));
+        // ИСПРАВЛЕНО: всегда положительное число (8)
+        int gridX = RAND.nextInt(8);
+        int gridY = RAND.nextInt(8);
+        activeSpots.add(new EffectSpot(gridX, gridY, type));
     }
 
-    public static List<BloodSpot> getActiveSpots() {
+    public static List<EffectSpot> getActiveSpots() {
         return activeSpots;
     }
 
     public static void reset() {
         lastHealth = -1;
-        maxHealth = -1;
         activeSpots.clear();
     }
 }
