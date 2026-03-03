@@ -1,9 +1,10 @@
 package com.stefanparmezan.atomic_parasites.main;
 
 import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
-import com.stefanparmezan.atomic_parasites.events.PlayerBlockEventHandler;
-import com.stefanparmezan.atomic_parasites.init.InitItems;
+import com.stefanparmezan.atomic_parasites.events.FireBreakingEventHandler;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
+import com.stefanparmezan.atomic_parasites.utils.handlers.FaceOverlayHandler;
+import com.stefanparmezan.atomic_parasites.utils.handlers.PotionEffectHandler;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -41,8 +42,10 @@ public class AtomicParasites {
         LOGGER.info("\u001B[34mStarted init");
 
         // 👇 Регистрируем ВСЕ обработчики событий
-        MinecraftForge.EVENT_BUS.register(PlayerBlockEventHandler.class);
+        MinecraftForge.EVENT_BUS.register(FireBreakingEventHandler.class);
         MinecraftForge.EVENT_BUS.register(ParasitesPhaseEventHandler.class);
+        MinecraftForge.EVENT_BUS.register(new FaceOverlayHandler());
+        MinecraftForge.EVENT_BUS.register(new PotionEffectHandler());
 
         LOGGER.info("\u001B[34mEvent handlers registered");
     }
