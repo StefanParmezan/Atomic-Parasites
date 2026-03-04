@@ -16,11 +16,11 @@ public class HealthOverlayManager {
     private static final int TRANSITION_TIME = 20;
 
     // Текстуры оверлеев
-    public static final ResourceLocation OVERLAY_80 = new ResourceLocation("atomic_parasites", "textures/blocks/player_face_80pr.png");
-    public static final ResourceLocation OVERLAY_60 = new ResourceLocation("atomic_parasites", "textures/blocks/player_face_60pr.png");
-    public static final ResourceLocation OVERLAY_40 = new ResourceLocation("atomic_parasites", "textures/blocks/player_face_40pr.png");
-    public static final ResourceLocation OVERLAY_20 = new ResourceLocation("atomic_parasites", "textures/blocks/player_face_20pr.png");
-    public static final ResourceLocation OVERLAY_DEATH = new ResourceLocation("atomic_parasites", "textures/blocks/player_face_3hp.png");
+    public static final ResourceLocation OVERLAY_80 = new ResourceLocation("atomic_parasites", "textures/player_avatar/player_face_80pr.png");
+    public static final ResourceLocation OVERLAY_60 = new ResourceLocation("atomic_parasites", "textures/player_avatar/player_face_60pr.png");
+    public static final ResourceLocation OVERLAY_40 = new ResourceLocation("atomic_parasites", "textures/player_avatar/player_face_40pr.png");
+    public static final ResourceLocation OVERLAY_20 = new ResourceLocation("atomic_parasites", "textures/player_avatar/player_face_20pr.png");
+    public static final ResourceLocation OVERLAY_DEATH = new ResourceLocation("atomic_parasites", "textures/player_avatar/player_face_3hp.png");
 
     // Текущее состояние
     private static ResourceLocation currentOverlay = null;
