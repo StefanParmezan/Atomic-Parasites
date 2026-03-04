@@ -12,7 +12,7 @@ public class BrainOverlayHandler {
 
     private static final int BRAIN_SIZE = 40;
     private static final int MARGIN = 3;
-    private static final int VERTICAL_OFFSET = 13;  // ИСПРАВЛЕНО: было 12, стало 8
+    private static final int VERTICAL_OFFSET = 13;
 
     private static final float BRAIN_U = 0.0f;
     private static final float BRAIN_V = 0.0f;
@@ -22,7 +22,6 @@ public class BrainOverlayHandler {
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
-
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.player == null || mc.gameSettings.hideGUI || mc.gameSettings.showDebugInfo) return;
 
@@ -31,14 +30,12 @@ public class BrainOverlayHandler {
 
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
-
-        // Позиция: справа от хотбара, VERTICAL_OFFSET = 8
         int hotbarRight = screenWidth / 2 + 91;
         int hotbarTop = screenHeight - 22;
         int x = hotbarRight + MARGIN;
         int y = hotbarTop - VERTICAL_OFFSET;
 
-        // Тряска при взрыве
+        // Тряска
         float shakeX = 0, shakeY = 0;
         if (BrainManager.isShaking()) {
             shakeX = (float) ((Math.random() - 0.5) * 10);
@@ -58,17 +55,21 @@ public class BrainOverlayHandler {
         );
 
         mc.getTextureManager().bindTexture(brainTexture);
+
+        // === ИСПРАВЛЕНО: КРАСНЫЙ МОЗГ ПРИ УРОНЕ ===
+        if (BrainManager.isFlashingRed()) {
+            // Окрашиваем саму текстуру в красный цвет на 1 секунду
+            GlStateManager.color(1.0f, 0.0f, 0.0f, 1.0f);
+        } else {
+            // Обычный белый цвет (текстура отображается как есть)
+            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
+        // Рисуем мозг (с красным или белым цветом)
         drawBrain((int)(x + shakeX), (int)(y + shakeY), BRAIN_SIZE);
 
-        // === ПРОСТАЯ КРАСНАЯ ВСПЫШКА (как в FaceColorModifier) ===
-        if (BrainManager.isFlashingRed()) {
-            // Просто рисуем красный прямоугольник поверх мозга — без анимации
-            Gui.drawRect(
-                    (int)(x + shakeX), (int)(y + shakeY),
-                    (int)(x + shakeX + BRAIN_SIZE), (int)(y + shakeY + BRAIN_SIZE),
-                    0x99FF0000  // Красный с прозрачностью ~60%
-            );
-        }
+        // Сбрасываем цвет обратно в белый для остальных элементов
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 
         // Процент внутри мозга
         drawSanityPercentInside((int)(x + shakeX), (int)(y + shakeY), BRAIN_SIZE, BrainManager.getCurrentSanity());
