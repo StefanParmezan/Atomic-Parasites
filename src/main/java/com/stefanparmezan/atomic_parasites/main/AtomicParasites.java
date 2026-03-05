@@ -1,6 +1,7 @@
 package com.stefanparmezan.atomic_parasites.main;
 
 import com.stefanparmezan.atomic_parasites.brain.BrainOverlayHandler;
+import com.stefanparmezan.atomic_parasites.brain.BrainTickHandler;
 import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
 import com.stefanparmezan.atomic_parasites.events.FireBreakingEventHandler;
 import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
@@ -46,6 +47,7 @@ public class AtomicParasites {
         MinecraftForge.EVENT_BUS.register(ParasitesPhaseEventHandler.class);
         MinecraftForge.EVENT_BUS.register(new FaceOverlayHandler());
         MinecraftForge.EVENT_BUS.register(new BrainOverlayHandler());
+        MinecraftForge.EVENT_BUS.register(new BrainTickHandler());
         LOGGER.info("\u001B[34mEvent handlers registered");
     }
 
