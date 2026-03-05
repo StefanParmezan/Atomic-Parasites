@@ -4,8 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BrainOverlayHandler {
@@ -19,23 +22,41 @@ public class BrainOverlayHandler {
     private static final float BRAIN_SRC_SIZE = 16.0f;
     private static final float BRAIN_TEX_SIZE = 16.0f;
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
-        if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+        if (event.getType() != ElementType.ALL) {
+            return;
+        }
+
         Minecraft mc = Minecraft.getMinecraft();
-        if (mc.player == null || mc.gameSettings.hideGUI || mc.gameSettings.showDebugInfo) return;
+        if (mc.player == null || mc.gameSettings.hideGUI || mc.gameSettings.showDebugInfo) {
+            return;
+        }
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
         BrainManager.update(player);
 
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
-        int hotbarRight = screenWidth / 2 + 91;
-        int hotbarTop = screenHeight - 22;
-        int x = hotbarRight + MARGIN;
-        int y = hotbarTop - VERTICAL_OFFSET;
 
-        // Тряска
+        // === ДИНАМИЧЕСКОЕ ПОЗИЦИОНИРОВАНИЕ ===
+        int x, y;
+        EnumHandSide mainHand = player.getPrimaryHand();
+        int hotbarTop = screenHeight - 22;
+
+        if (mainHand == EnumHandSide.LEFT) {
+            // Основная рука левая — мозг СЛЕВА от хотбара
+            int hotbarLeft = screenWidth / 2 - 91;
+            x = hotbarLeft - BRAIN_SIZE - MARGIN;
+        } else {
+            // Основная рука правая — мозг СПРАВА от хотбара
+            int hotbarRight = screenWidth / 2 + 91;
+            x = hotbarRight + MARGIN;
+        }
+        y = hotbarTop - VERTICAL_OFFSET;
+        // =================================
+
+        // Тряска при взрыве/уроне
         float shakeX = 0, shakeY = 0;
         if (BrainManager.isShaking()) {
             shakeX = (float) ((Math.random() - 0.5) * 10);
@@ -44,7 +65,9 @@ public class BrainOverlayHandler {
 
         ResourceLocation brainTexture = BrainManager.getCurrentBrainTexture();
 
+        // === НАСТРОЙКА OpenGL ДЛЯ ОТРИСОВКИ ПОВЕРХ ВСЕГО ===
         GlStateManager.pushMatrix();
+        GlStateManager.disableDepth();
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.tryBlendFuncSeparate(
@@ -53,29 +76,29 @@ public class BrainOverlayHandler {
                 GlStateManager.SourceFactor.ONE,
                 GlStateManager.DestFactor.ZERO
         );
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
         mc.getTextureManager().bindTexture(brainTexture);
 
-        // === ИСПРАВЛЕНО: КРАСНЫЙ МОЗГ ПРИ УРОНЕ ===
+        // Применяем красный цвет при флеше (урон)
         if (BrainManager.isFlashingRed()) {
-            // Окрашиваем саму текстуру в красный цвет на 1 секунду
             GlStateManager.color(1.0f, 0.0f, 0.0f, 1.0f);
-        } else {
-            // Обычный белый цвет (текстура отображается как есть)
-            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        // Рисуем мозг (с красным или белым цветом)
+        // Рисуем мозг (с учётом тряски)
         drawBrain((int)(x + shakeX), (int)(y + shakeY), BRAIN_SIZE);
 
-        // Сбрасываем цвет обратно в белый для остальных элементов
+        // Сбрасываем цвет для текста
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // Процент внутри мозга
+        // Рисуем процент рассудка внутри мозга
         drawSanityPercentInside((int)(x + shakeX), (int)(y + shakeY), BRAIN_SIZE, BrainManager.getCurrentSanity());
 
-        GlStateManager.disableBlend();
+        // === ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ OpenGL ===
+        GlStateManager.enableDepth();
         GlStateManager.enableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
     }
 

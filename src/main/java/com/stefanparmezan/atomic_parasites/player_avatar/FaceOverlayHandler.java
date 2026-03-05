@@ -6,8 +6,10 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.MobEffects;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import com.stefanparmezan.atomic_parasites.player_avatar.HealthOverlayManager;
@@ -32,7 +34,7 @@ public class FaceOverlayHandler {
     private static final int BLOOD_COLOR = 0xFFAA0000;
     private static final int BURN_COLOR = 0xFF555555;
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
             return;
@@ -40,12 +42,13 @@ public class FaceOverlayHandler {
 
         Minecraft mc = Minecraft.getMinecraft();
 
-        if (mc.player == null || mc.gameSettings.hideGUI || mc.gameSettings.showDebugInfo) {
+        if (mc.player == null || mc.gameSettings.hideGUI) {
             return;
         }
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
 
+        // Обновляем менеджеры
         BloodEffectManager.update(player);
         WaterEffectManager.update(player);
         HealthOverlayManager.update(player);
@@ -53,15 +56,28 @@ public class FaceOverlayHandler {
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
 
+        // Позиция аватара (слева от хотбара)
         int hotbarLeft = screenWidth / 2 - 91;
         int hotbarTop = screenHeight - 22;
-
         int x = hotbarLeft - FACE_SIZE - MARGIN;
         int y = hotbarTop - 10;
 
+        EnumHandSide mainHand = player.getPrimaryHand();
+
+        if (mainHand == EnumHandSide.LEFT) {
+            // Аватар СПРАВА
+            int hotbarRight = screenWidth / 2 + 91;
+            x = hotbarRight + MARGIN;
+        } else {
+            // Аватар СЛЕВА
+            x = hotbarLeft - FACE_SIZE - MARGIN;
+        }
+
         ResourceLocation skin = player.getLocationSkin();
 
+        // === НАСТРОЙКА OpenGL ДЛЯ ОТРИСОВКИ ПОВЕРХ ВСЕГО ===
         GlStateManager.pushMatrix();
+        GlStateManager.disableDepth(); // Отключаем Z-буфер
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.tryBlendFuncSeparate(
@@ -70,6 +86,7 @@ public class FaceOverlayHandler {
                 GlStateManager.SourceFactor.ONE,
                 GlStateManager.DestFactor.ZERO
         );
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
         // 1. Рисуем базовое лицо (скин игрока)
         mc.getTextureManager().bindTexture(skin);
@@ -100,11 +117,13 @@ public class FaceOverlayHandler {
             drawHealthOverlay(x, y, FACE_SIZE);
         }
 
-        GlStateManager.disableBlend();
+        // === ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ OpenGL ===
+        GlStateManager.enableDepth(); // Включаем Z-буфер обратно
         GlStateManager.enableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F); // Сброс цвета
         GlStateManager.popMatrix();
     }
-
     private void drawBaseFace(int x, int y) {
         Gui.drawScaledCustomSizeModalRect(
                 x, y, FACE_U, FACE_V,
