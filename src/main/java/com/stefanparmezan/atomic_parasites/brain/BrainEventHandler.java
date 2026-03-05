@@ -1,16 +1,49 @@
 package com.stefanparmezan.atomic_parasites.brain;
 
 import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
+import net.minecraft.block.Block;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 public class BrainEventHandler {
 
-    // === НАСТРОЙКИ БАЛАНСА ===
-    private static final int DECAY_INTERVAL = 120;
-    private static final int RECOVERY_INTERVAL = 360;
+    // === ⚙️ НАСТРОЙКИ БАЛАНСА (можно менять) ===
+
+    // Уровень блочного света, ниже которого начинается падение психики (ночью + на улице)
+    private static final int DARKNESS_LIGHT_THRESHOLD = 8;
+
+    // Уровень блочного света, выше которого начинается восстановление психики
+    private static final int BRIGHT_LIGHT_THRESHOLD = 11;
+
+    // Интервалы в тиках (20 тиков = 1 секунда)
+    private static final int DECAY_INTERVAL = 120;        // ~6 секунд между -1% психики
+    private static final int RECOVERY_INTERVAL = 360;     // ~18 секунд между +1% психики
+
+    // === 🚫 БЛОКИ, КОТОРЫЕ НЕ СЧИТАЮТСЯ УКРЫТИЕМ ===
+    // Игрок не может спрятаться под ними от "ужаса ночи"
+    private static boolean isBlockIgnoredForCover(Block block) {
+        return block == Blocks.STONE
+                || block == Blocks.COBBLESTONE
+                || block == Blocks.DIRT
+                || block == Blocks.GRASS
+                || block == Blocks.GRAVEL
+                || block == Blocks.SAND
+                || block == Blocks.SANDSTONE
+                || block == Blocks.COAL_ORE
+                || block == Blocks.IRON_ORE
+                || block == Blocks.GOLD_ORE
+                || block == Blocks.DIAMOND_ORE
+                || block == Blocks.EMERALD_ORE
+                || block == Blocks.REDSTONE_ORE
+                || block == Blocks.LAPIS_ORE
+                || block == Blocks.QUARTZ_ORE
+                || block == Blocks.NETHERRACK
+                || block == Blocks.END_STONE
+                || block == Blocks.OBSIDIAN;
+    }
 
     // === Внутренние таймеры ===
     private static int darknessTimer = 0;
@@ -39,8 +72,10 @@ public class BrainEventHandler {
 
     /**
      * === ПРОВЕРКА: НАХОДИТСЯ ЛИ ИГРОК ПОД НАДЁЖНЫМ УКРЫТИЕМ ===
-     * Возвращает true, только если над головой есть НЕПРОЗРАЧНЫЙ блок
-     * Листья, стекло, плиты — НЕ считаются укрытием!
+     * Возвращает true, только если над головой есть блок, который:
+     * 1. Не является воздухом
+     * 2. Не в списке игнорируемых (камень, земля, руды и т.д.)
+     * 3. Достаточно непрозрачный (lightOpacity >= 10) ИЛИ является полным непрозрачным кубом
      */
     private static boolean isUnderSolidCover(AbstractClientPlayer player) {
         BlockPos pos = new BlockPos(player.posX, player.posY + 1.6, player.posZ);
@@ -55,15 +90,19 @@ public class BrainEventHandler {
 
             // Получаем состояние блока
             net.minecraft.block.state.IBlockState state = player.world.getBlockState(checkPos);
+            Block block = state.getBlock();
 
             // Если блок воздух — идём выше
-            if (state.getBlock().isAir(state, player.world, checkPos)) {
+            if (block.isAir(state, player.world, checkPos)) {
+                continue;
+            }
+
+            // 🚫 Если блок в списке игнорируемых — он НЕ считается укрытием, идём выше
+            if (isBlockIgnoredForCover(block)) {
                 continue;
             }
 
             // ✅ ГЛАВНАЯ ПРОВЕРКА: светонепроницаемость
-            // getLightOpacity() возвращает насколько блок блокирует свет (0-15)
-            // Листья = 2-3, Стекло = 0, Полные блоки = 15
             int lightOpacity = state.getLightOpacity(player.world, checkPos);
 
             // Если блок достаточно непрозрачный (>= 10) — считаем это укрытием
@@ -71,7 +110,7 @@ public class BrainEventHandler {
                 return true;
             }
 
-            // ✅ ИСПРАВЛЕНО для 1.12.2: проверяем полный куб через isOpaqueCube()
+            // ✅ Дополнительная проверка: полный непрозрачный куб
             if (state.isOpaqueCube() && state.isFullCube()) {
                 return true;
             }
@@ -94,8 +133,8 @@ public class BrainEventHandler {
         int blockLight = player.world.getLightFor(EnumSkyBlock.BLOCK, pos);
 
         // === ЛОГИКА: ТЬМА ===
-        // Условия: Ночь + НЕТ надёжного укрытия + Нет яркого источника света
-        if (night && !underCover && blockLight <= 7) {
+        // Условия: Ночь + НЕТ надёжного укрытия + Блочный свет <= порога
+        if (night && !underCover && blockLight <= DARKNESS_LIGHT_THRESHOLD) {
             recoveryTimer = 0;
             darknessTimer++;
 
@@ -107,8 +146,8 @@ public class BrainEventHandler {
             }
         }
         // === ЛОГИКА: СВЕТ ===
-        // Условия: Либо день, либо есть укрытие, либо яркий источник света
-        else if (!night || underCover || blockLight >= 11) {
+        // Условия: Либо день, либо есть укрытие, либо блочный свет >= порога
+        else if (!night || underCover || blockLight >= BRIGHT_LIGHT_THRESHOLD) {
             darknessTimer = 0;
             recoveryTimer++;
 
@@ -134,6 +173,8 @@ public class BrainEventHandler {
                     underCover, blockLight, player.world.getLightFor(EnumSkyBlock.SKY, pos));
             AtomicParasites.LOGGER.info("🧠 Sanity: {} | Timers: dark={} | rec={}",
                     (int)sanity, darknessTimer, recoveryTimer);
+            AtomicParasites.LOGGER.info("⚙️ Thresholds: DARK<={} | BRIGHT>={}",
+                    DARKNESS_LIGHT_THRESHOLD, BRIGHT_LIGHT_THRESHOLD);
             AtomicParasites.LOGGER.info("================================");
         }
     }
