@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -13,10 +12,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BrainOverlayHandler {
 
+    // === НАСТРОЙКИ ПОЗИЦИИ И РАЗМЕРА ===
     private static final int BRAIN_SIZE = 40;
     private static final int MARGIN = 3;
     private static final int VERTICAL_OFFSET = 13;
 
+    // === UV-координаты и размеры текстуры ===
     private static final float BRAIN_U = 0.0f;
     private static final float BRAIN_V = 0.0f;
     private static final float BRAIN_SRC_SIZE = 16.0f;
@@ -34,29 +35,20 @@ public class BrainOverlayHandler {
         }
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
-        BrainManager.update(player);
 
+        // === ОБНОВЛЕНИЕ ЛОГИКИ (урон, взрывы, рассудок) ===
+        BrainEventHandler.tick(player);
+
+        // === ВЫЧИСЛЕНИЕ ПОЗИЦИИ (всегда справа) ===
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
 
-        // === ДИНАМИЧЕСКОЕ ПОЗИЦИОНИРОВАНИЕ ===
-        int x, y;
-        EnumHandSide mainHand = player.getPrimaryHand();
+        int hotbarRight = screenWidth / 2 + 91;
         int hotbarTop = screenHeight - 22;
+        int x = hotbarRight + MARGIN;
+        int y = hotbarTop - VERTICAL_OFFSET;
 
-        if (mainHand == EnumHandSide.LEFT) {
-            // Основная рука левая — мозг СЛЕВА от хотбара
-            int hotbarLeft = screenWidth / 2 - 91;
-            x = hotbarLeft - BRAIN_SIZE - MARGIN;
-        } else {
-            // Основная рука правая — мозг СПРАВА от хотбара
-            int hotbarRight = screenWidth / 2 + 91;
-            x = hotbarRight + MARGIN;
-        }
-        y = hotbarTop - VERTICAL_OFFSET;
-        // =================================
-
-        // Тряска при взрыве/уроне
+        // === ЭФФЕКТ ТРЯСКИ ===
         float shakeX = 0, shakeY = 0;
         if (BrainManager.isShaking()) {
             shakeX = (float) ((Math.random() - 0.5) * 10);
@@ -67,7 +59,7 @@ public class BrainOverlayHandler {
 
         // === НАСТРОЙКА OpenGL ДЛЯ ОТРИСОВКИ ПОВЕРХ ВСЕГО ===
         GlStateManager.pushMatrix();
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepth(); // Отключаем Z-буфер
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.tryBlendFuncSeparate(
@@ -78,9 +70,10 @@ public class BrainOverlayHandler {
         );
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
+        // Привязываем текстуру мозга
         mc.getTextureManager().bindTexture(brainTexture);
 
-        // Применяем красный цвет при флеше (урон)
+        // === КРАСНЫЙ ФЛЭШ ПРИ УРОНЕ ===
         if (BrainManager.isFlashingRed()) {
             GlStateManager.color(1.0f, 0.0f, 0.0f, 1.0f);
         }
@@ -95,28 +88,48 @@ public class BrainOverlayHandler {
         drawSanityPercentInside((int)(x + shakeX), (int)(y + shakeY), BRAIN_SIZE, BrainManager.getCurrentSanity());
 
         // === ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ OpenGL ===
-        GlStateManager.enableDepth();
+        GlStateManager.enableDepth(); // Включаем Z-буфер обратно
         GlStateManager.enableAlpha();
         GlStateManager.disableBlend();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F); // Сброс цвета
         GlStateManager.popMatrix();
     }
 
+    /**
+     * Отрисовка текстуры мозга с масштабированием
+     */
     private void drawBrain(int x, int y, int displaySize) {
         Gui.drawScaledCustomSizeModalRect(
-                x, y, BRAIN_U, BRAIN_V,
+                x, y,
+                BRAIN_U, BRAIN_V,
                 (int) BRAIN_SRC_SIZE, (int) BRAIN_SRC_SIZE,
                 displaySize, displaySize,
                 BRAIN_TEX_SIZE, BRAIN_TEX_SIZE
         );
     }
 
+    /**
+     * Отрисовка процента рассудка внутри мозга
+     */
     private void drawSanityPercentInside(int x, int y, int size, float sanity) {
         String text = (int) sanity + "%";
-        int w = Minecraft.getMinecraft().fontRenderer.getStringWidth(text);
-        int textX = x + (size - w) / 2;
-        int textY = y + (size - 8) / 2;
-        int color = sanity > 50 ? 0xFFFFFFFF : (sanity > 25 ? 0xFFFFAA00 : 0xFFFF0000);
-        Minecraft.getMinecraft().fontRenderer.drawStringWithShadow(text, textX, textY, color);
+        Minecraft mc = Minecraft.getMinecraft();
+        int textWidth = mc.fontRenderer.getStringWidth(text);
+
+        // Центрирование текста внутри мозга
+        int textX = x + (size - textWidth) / 2;
+        int textY = y + (size - 8) / 2; // 8 — примерная высота шрифта
+
+        // Цвет текста в зависимости от уровня рассудка
+        int color;
+        if (sanity > 50) {
+            color = 0xFFFFFFFF; // Белый
+        } else if (sanity > 25) {
+            color = 0xFFFFAA00; // Оранжевый
+        } else {
+            color = 0xFFFF0000; // Красный
+        }
+
+        mc.fontRenderer.drawStringWithShadow(text, textX, textY, color);
     }
 }
