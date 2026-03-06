@@ -25,12 +25,7 @@ public class BrainLightItemHandler {
         int mainLevel = getLightLevelFromItem(mainHand);
         int offLevel = getLightLevelFromItem(offHand);
 
-        int maxLevel = Math.max(mainLevel, offLevel);
-
-        AtomicParasites.LOGGER.info("[Brain] 🕯️ LightItem | Main: {} | Off: {} | Max: {}",
-                mainLevel, offLevel, maxLevel);
-
-        return maxLevel;
+        return Math.max(mainLevel, offLevel);
     }
 
     // === 🔍 АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ СВЕТА ПРЕДМЕТА ===

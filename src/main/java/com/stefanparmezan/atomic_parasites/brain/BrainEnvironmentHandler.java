@@ -60,7 +60,7 @@ public class BrainEnvironmentHandler {
                     slowdownMultiplier = 2;  // x2 для света 10-12
                 }
 
-                // ✅ Умножаем порог на множитель
+                // Умножаем порог на множитель
                 int effectiveThreshold = BrainConfig.ENV_DECAY_INTERVAL * slowdownMultiplier;
 
                 darknessTimer++;
@@ -90,12 +90,17 @@ public class BrainEnvironmentHandler {
                 }
             }
         }
+        // В блоке isSafe (восстановление):
         else if (isSafe) {
             darknessTimer = 0;
+
+            // 🔄 МНОЖИТЕЛЬ ТОЛЬКО ОТ ЦВЕТОВ (сон обрабатывается отдельно!)
+            float recoveryMultiplier = BrainRecoveryHandler.getRecoveryMultiplier(player);
+            int effectiveRecoveryThreshold = (int)(BrainConfig.ENV_RECOVERY_INTERVAL / recoveryMultiplier);
+
             recoveryTimer++;
-            if (recoveryTimer >= BrainConfig.ENV_RECOVERY_INTERVAL && sanity < 100) {
+            if (recoveryTimer >= effectiveRecoveryThreshold && sanity < 100) {
                 BrainManager.addSanity(1);
-                AtomicParasites.LOGGER.info("[Brain] 📈 Sanity +1 | New: {}", (int)BrainManager.getCurrentSanity());
                 recoveryTimer = 0;
             }
         }

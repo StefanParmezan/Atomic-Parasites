@@ -8,8 +8,8 @@ public class BrainConfig {
     // === 🌑 Окружение ===
     public static final int DARKNESS_LIGHT_THRESHOLD = 8;
     public static final int BRIGHT_LIGHT_THRESHOLD = 11;
-    public static final int ENV_DECAY_INTERVAL = 40;
-    public static final int ENV_RECOVERY_INTERVAL = 220;
+    public static final int ENV_DECAY_INTERVAL = 35;
+    public static final int ENV_RECOVERY_INTERVAL = 130;
 
     // === 💔 Физика ===
     public static final int HP_LOSS_THRESHOLD = 4;

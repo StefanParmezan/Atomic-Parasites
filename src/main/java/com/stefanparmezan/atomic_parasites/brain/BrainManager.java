@@ -1,5 +1,6 @@
 package com.stefanparmezan.atomic_parasites.brain;
 
+import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
