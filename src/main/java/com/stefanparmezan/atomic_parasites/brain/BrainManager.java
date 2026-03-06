@@ -2,6 +2,7 @@ package com.stefanparmezan.atomic_parasites.brain;
 
 import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
@@ -29,6 +30,7 @@ public class BrainManager {
     private static final int SHAKE_DURATION = 30;
     private static boolean deathTriggered = false;
 
+    // === СТАРЫЕ МЕТОДЫ (без аргументов) - для GUI ===
     public static float getCurrentSanity() { return currentSanity; }
     public static ResourceLocation getCurrentBrainTexture() { return currentTexture; }
     public static boolean isFlashingRed() { return isFlashingRed; }
@@ -39,6 +41,15 @@ public class BrainManager {
         currentSanity = Math.max(0, Math.min(100, sanity));
         updateTexture();
         if (currentSanity <= 0 && !deathTriggered) triggerSanityDeath();
+    }
+
+    // === НОВЫЕ МЕТОДЫ (с EntityPlayer) - для совместимости с FearOfDeathHandler ===
+    public static float getCurrentSanity(EntityPlayer player) {
+        return getCurrentSanity(); // Игнорируем игрока, возвращаем статику
+    }
+
+    public static void setSanity(EntityPlayer player, float sanity) {
+        setSanity(sanity); // Игнорируем игрока, ставим статику
     }
 
     public static void addSanity(float amount) { setSanity(currentSanity + amount); }

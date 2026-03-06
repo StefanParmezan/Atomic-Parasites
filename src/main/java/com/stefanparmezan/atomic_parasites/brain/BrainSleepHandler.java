@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BrainSleepHandler {
 
-    private static final float SLEEP_RECOVERY_PERCENT = 0.30f;
+    private static final float SLEEP_RECOVERY_PERCENT = 0.25f;
 
     @SubscribeEvent
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {
