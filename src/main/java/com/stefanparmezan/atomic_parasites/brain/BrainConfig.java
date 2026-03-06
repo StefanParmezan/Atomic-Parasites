@@ -20,26 +20,13 @@ public class BrainConfig {
     // === 💀 Смерть ===
     public static final int SANITY_AFTER_DEATH = 30;
     public static final String[] DEATH_MESSAGES = {
-            "%player% решил послушать голоса в голове",
-            "%player% не выдержал шёпота в темноте",
+            "%player% решил подчиниться голосам в голове",
             "%player% потерял рассудок окончательно",
-            "%player% стал одним из них",
-            "%player% не смог бороться с паразитами",
             "%player% растворился в безумии",
-            "%player% услышал Зов и не вернулся",
-            "%player% больше не человек",
-            "Рассудок %player% не выдержал этого мира"
+            "Рассудок %player% не выдержал этого мира",
+            "%player% решил поспорить с голосом в голове"
     };
 
-    // === 🚫 Блоки, не считающиеся укрытием ===
-    public static boolean isBlockIgnoredForCover(Block block) {
-        return block == Blocks.STONE || block == Blocks.COBBLESTONE || block == Blocks.DIRT
-                || block == Blocks.GRASS || block == Blocks.GRAVEL || block == Blocks.SAND
-                || block == Blocks.SANDSTONE || block == Blocks.COAL_ORE || block == Blocks.IRON_ORE
-                || block == Blocks.GOLD_ORE || block == Blocks.DIAMOND_ORE || block == Blocks.EMERALD_ORE
-                || block == Blocks.REDSTONE_ORE || block == Blocks.LAPIS_ORE || block == Blocks.QUARTZ_ORE
-                || block == Blocks.NETHERRACK || block == Blocks.END_STONE || block == Blocks.OBSIDIAN;
-    }
 
     public static String getRandomDeathMessage(String playerName) {
         String msg = DEATH_MESSAGES[(int)(Math.random() * DEATH_MESSAGES.length)];
