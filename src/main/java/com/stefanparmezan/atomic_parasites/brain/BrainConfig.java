@@ -12,8 +12,8 @@ public class BrainConfig {
     public static final int ENV_RECOVERY_INTERVAL = 220;
 
     // === 💔 Физика ===
-    public static final int HP_LOSS_THRESHOLD = 5;
-    public static final int SANITY_PENALTY = 2;
+    public static final int HP_LOSS_THRESHOLD = 4;
+    public static final int SANITY_PENALTY = 1;
     public static final double MOTION_THRESHOLD = 0.8;
     public static final int EXPLOSION_COOLDOWN = 60;
 
