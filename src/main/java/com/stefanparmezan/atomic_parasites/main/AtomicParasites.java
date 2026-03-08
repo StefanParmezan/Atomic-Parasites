@@ -5,11 +5,11 @@ import com.stefanparmezan.atomic_parasites.brain.BrainSleepHandler;
 import com.stefanparmezan.atomic_parasites.brain.BrainTickHandler;
 import com.stefanparmezan.atomic_parasites.brain.effects.FearOfDeathHandler;
 import com.stefanparmezan.atomic_parasites.brain.effects.PotionFearOfDeath;
-import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
 import com.stefanparmezan.atomic_parasites.events.FireBreakingEventHandler;
+import com.stefanparmezan.atomic_parasites.events.ParasitesPhaseEventHandler;
 import com.stefanparmezan.atomic_parasites.network.CameraShakePacket;
-import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
 import com.stefanparmezan.atomic_parasites.player_avatar.FaceOverlayHandler;
+import com.stefanparmezan.atomic_parasites.proxy.CommonProxy;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -36,20 +36,29 @@ public class AtomicParasites {
 
     public static final Logger LOGGER = LogManager.getLogger(AtomicParasitesInfo.MOD_ID);
 
+    // === 🎵 ЗВУК ===
     public static final SoundEvent FEAR_GASP = new SoundEvent(new ResourceLocation(AtomicParasitesInfo.MOD_ID, "mob.player.fear_gasp"))
             .setRegistryName("mob.player.fear_gasp");
 
+    // === 🌐 СЕТЬ ===
     public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(AtomicParasitesInfo.MOD_ID);
-
 
     @SidedProxy(clientSide = AtomicParasitesInfo.CLIENT, serverSide = AtomicParasitesInfo.COMMON)
     public static CommonProxy proxy;
 
     @Mod.EventHandler
     public void preinit(FMLPreInitializationEvent preinit) {
+        // 1. Регистрация звука
         ForgeRegistries.SOUND_EVENTS.register(FEAR_GASP);
+        LOGGER.info("[Atomic Parasites] ✅ Sound registered: {}", FEAR_GASP.getRegistryName());
+
+        // 2. Регистрация сетевого пакета (ID = 0, сторона CLIENT)
         network.registerMessage(CameraShakePacket.Handler.class, CameraShakePacket.class, 0, Side.CLIENT);
+        LOGGER.info("[Atomic Parasites] ✅ Network packet registered");
+
+        // 3. Регистрация зелья
         PotionFearOfDeath.register();
+
         LOGGER.info("[Atomic Parasites] PreInit completed");
     }
 
@@ -57,7 +66,7 @@ public class AtomicParasites {
     public void init(FMLInitializationEvent event) {
         LOGGER.info("\u001B[34mStarted init");
 
-        // 👇 Регистрируем ВСЕ обработчики событий
+        // Регистрируем ВСЕ обработчики событий
         MinecraftForge.EVENT_BUS.register(FireBreakingEventHandler.class);
         MinecraftForge.EVENT_BUS.register(ParasitesPhaseEventHandler.class);
         MinecraftForge.EVENT_BUS.register(new FaceOverlayHandler());
