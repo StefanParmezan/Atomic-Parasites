@@ -32,8 +32,11 @@ public class BrainOverlayHandler {
         // === 📍 ПОЗИЦИЯ ===
         int sw = event.getResolution().getScaledWidth();
         int sh = event.getResolution().getScaledHeight();
-        int x = sw / 2 + 91 + MARGIN;   // Справа от хотбара
+        int x = sw / 2 + 91 + MARGIN;
         int y = sh - 22 - VERTICAL_OFFSET;
+
+        // === 🎨 РАСЧЁТ ЦВЕТА МОЗГА ===
+        BrainColorModifier.BrainColorResult color = BrainColorModifier.calculate(player);
 
         // === 🎨 ОТРИСОВКА ===
         GlStateManager.pushMatrix();
@@ -46,30 +49,30 @@ public class BrainOverlayHandler {
                 GlStateManager.SourceFactor.ONE,
                 GlStateManager.DestFactor.ZERO
         );
-        GlStateManager.color(1, 1, 1, 1); // ✅ Всегда белый цвет (никакого красного!)
 
-        // Рисуем текстуру мозга
+        // ✅ ПРИМЕНЯЕМ ЦВЕТ
+        GlStateManager.color(color.baseR, color.baseG, color.baseB, 1.0f);
+
         mc.getTextureManager().bindTexture(BrainManager.getCurrentBrainTexture());
         Gui.drawScaledCustomSizeModalRect(
-                x, y,                    // ✅ Без sx/sy — никакой тряски!
+                x, y,
                 BRAIN_U, BRAIN_V,
                 (int) BRAIN_SRC, (int) BRAIN_SRC,
                 BRAIN_SIZE, BRAIN_SIZE,
                 BRAIN_TEX, BRAIN_TEX
         );
 
-        // Рисуем текст с процентами
+        // Текст с процентами (всегда белый для читаемости)
         GlStateManager.color(1, 1, 1, 1);
         drawSanityText(x, y, BRAIN_SIZE, BrainManager.getCurrentSanity());
 
-        // Восстанавливаем состояние
+        // Восстановление состояния
         GlStateManager.enableDepth();
         GlStateManager.enableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.color(1, 1, 1, 1);
         GlStateManager.popMatrix();
     }
-
     private void drawSanityText(int x, int y, int size, float sanity) {
         Minecraft mc = Minecraft.getMinecraft();
         String text = (int) sanity + "%";

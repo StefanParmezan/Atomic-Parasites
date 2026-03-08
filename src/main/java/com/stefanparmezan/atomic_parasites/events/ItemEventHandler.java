@@ -2,9 +2,8 @@ package com.stefanparmezan.atomic_parasites.events;
 
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
-import com.stefanparmezan.atomic_parasites.utils.helpers.HbmHelper;
+import com.stefanparmezan.atomic_parasites.util.helpers.HbmHelper;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

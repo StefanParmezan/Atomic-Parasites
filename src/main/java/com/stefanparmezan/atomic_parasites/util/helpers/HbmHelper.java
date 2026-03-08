@@ -1,4 +1,4 @@
-package com.stefanparmezan.atomic_parasites.utils.helpers;
+package com.stefanparmezan.atomic_parasites.util.helpers;
 
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;

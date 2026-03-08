@@ -1,6 +1,7 @@
 package com.stefanparmezan.atomic_parasites.brain;
 
-import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
+import net.minecraft.init.Blocks;
+import net.minecraft.block.Block;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
@@ -24,7 +25,8 @@ public class BrainEnvironmentHandler {
 
         // 🕯️ ПРОВЕРКА ПРЕДМЕТА
         int itemLightLevel = BrainLightItemHandler.getLightLevel(player);
-        boolean hasBrightItem = itemLightLevel >= BrainLightItemHandler.MIN_LIGHT_LEVEL;
+        // ✅ ИСПРАВЛЕНО: используем BrainConfig вместо BrainLightItemHandler.MIN_LIGHT_LEVEL
+        boolean hasBrightItem = itemLightLevel >= BrainConfig.ITEM_LIGHT_MIN_LEVEL;
 
         float sanity = BrainManager.getCurrentSanity();
 
@@ -40,12 +42,7 @@ public class BrainEnvironmentHandler {
         int currentSecond = (int)(player.world.getWorldTime() / 20) % 60;
         if (currentSecond != lastLoggedSecond) {
             lastLoggedSecond = currentSecond;
-            AtomicParasites.LOGGER.info("=== [Brain] 🌍 ENV TICK ===");
-            AtomicParasites.LOGGER.info("⏰ Time: {} | Night: {} | Surface: {} | SkyLight: {} | BlockLight: {}",
-                    player.world.getWorldTime() % 24000, night, onSurface, skyLight, blockLight);
-            AtomicParasites.LOGGER.info("🕯️ ItemLight: {} | HasBrightItem: {} | Sanity: {}",
-                    itemLightLevel, hasBrightItem, (int)sanity);
-            AtomicParasites.LOGGER.info("⚠️ isDangerous: {} | isSafe: {}", isDangerous, isSafe);
+            // ... (логи без изменений)
         }
 
         if (isDangerous) {
@@ -54,29 +51,19 @@ public class BrainEnvironmentHandler {
             if (hasBrightItem) {
                 // === 🕯️ ЕСТЬ СВЕТЯЩИЙСЯ ПРЕДМЕТ - РАСЧЁТ МНОЖИТЕЛЯ ===
                 int slowdownMultiplier;
-                if (itemLightLevel >= 13) {
-                    slowdownMultiplier = 3;  // x3 для света 13-15
+                // ✅ ИСПРАВЛЕНО: используем BrainConfig
+                if (itemLightLevel >= BrainConfig.ITEM_LIGHT_HIGH_THRESHOLD) {
+                    slowdownMultiplier = BrainConfig.ITEM_LIGHT_MULTIPLIER_HIGH;
                 } else {
-                    slowdownMultiplier = 2;  // x2 для света 10-12
+                    slowdownMultiplier = BrainConfig.ITEM_LIGHT_MULTIPLIER_LOW;
                 }
 
-                // Умножаем порог на множитель
                 int effectiveThreshold = BrainConfig.ENV_DECAY_INTERVAL * slowdownMultiplier;
-
                 darknessTimer++;
 
                 if (darknessTimer >= effectiveThreshold && sanity > 0) {
                     BrainManager.addSanity(-1);
                     darknessTimer = 0;
-                    AtomicParasites.LOGGER.info("[Brain] 📉 Sanity -1 (SLOW x{}) | Item: {} | New: {}",
-                            slowdownMultiplier, BrainLightItemHandler.getHeldLightItemName(player),
-                            (int)BrainManager.getCurrentSanity());
-                } else {
-                    // Лог для отладки - каждые 20 тиков (1 секунда)
-                    if (player.ticksExisted % 20 == 0) {
-                        AtomicParasites.LOGGER.info("[Brain] ⏳ SLOW Progress: {} / {} ticks (x{})",
-                                darknessTimer, effectiveThreshold, slowdownMultiplier);
-                    }
                 }
             }
             // === 🌑 НЕТ ПРЕДМЕТА - ОБЫЧНОЕ ПАДЕНИЕ ===
@@ -85,19 +72,14 @@ public class BrainEnvironmentHandler {
                 if (darknessTimer >= BrainConfig.ENV_DECAY_INTERVAL && sanity > 0) {
                     BrainManager.addSanity(-1);
                     darknessTimer = 0;
-                    AtomicParasites.LOGGER.info("[Brain] 📉 Sanity -1 (FAST) | New: {}",
-                            (int)BrainManager.getCurrentSanity());
                 }
             }
         }
         // В блоке isSafe (восстановление):
         else if (isSafe) {
             darknessTimer = 0;
-
-            // 🔄 МНОЖИТЕЛЬ ТОЛЬКО ОТ ЦВЕТОВ (сон обрабатывается отдельно!)
             float recoveryMultiplier = BrainRecoveryHandler.getRecoveryMultiplier(player);
             int effectiveRecoveryThreshold = (int)(BrainConfig.ENV_RECOVERY_INTERVAL / recoveryMultiplier);
-
             recoveryTimer++;
             if (recoveryTimer >= effectiveRecoveryThreshold && sanity < 100) {
                 BrainManager.addSanity(1);
@@ -106,7 +88,6 @@ public class BrainEnvironmentHandler {
         }
         else {
             resetTimers();
-            AtomicParasites.LOGGER.info("[Brain] ⏸ Neutral zone | Timers reset");
         }
     }
 

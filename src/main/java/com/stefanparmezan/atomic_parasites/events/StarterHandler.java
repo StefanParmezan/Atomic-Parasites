@@ -2,7 +2,6 @@ package com.stefanparmezan.atomic_parasites.events;
 
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
-import com.stefanparmezan.atomic_parasites.utils.helpers.HbmHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;

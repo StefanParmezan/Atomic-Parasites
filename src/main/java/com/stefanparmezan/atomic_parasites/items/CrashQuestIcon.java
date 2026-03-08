@@ -3,7 +3,7 @@ package com.stefanparmezan.atomic_parasites.items;
 import com.stefanparmezan.atomic_parasites.init.InitItems;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
 import com.stefanparmezan.atomic_parasites.main.AtomicParasitesInfo;
-import com.stefanparmezan.atomic_parasites.utils.interfaces.IHasModel;
+import com.stefanparmezan.atomic_parasites.util.interfaces.IHasModel;
 import net.minecraft.item.Item;
 
 public class CrashQuestIcon extends Item implements IHasModel {

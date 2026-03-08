@@ -1,7 +1,7 @@
-package com.stefanparmezan.atomic_parasites.utils.handlers;
+package com.stefanparmezan.atomic_parasites.util.handlers;
 
 import com.stefanparmezan.atomic_parasites.init.InitItems;
-import com.stefanparmezan.atomic_parasites.utils.interfaces.IHasModel;
+import com.stefanparmezan.atomic_parasites.util.interfaces.IHasModel;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.event.RegistryEvent;

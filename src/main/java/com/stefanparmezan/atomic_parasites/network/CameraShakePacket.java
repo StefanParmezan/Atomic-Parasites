@@ -1,5 +1,6 @@
 package com.stefanparmezan.atomic_parasites.network;
 
+import com.stefanparmezan.atomic_parasites.main.AtomicParasites;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -28,16 +29,28 @@ public class CameraShakePacket implements IMessage {
         buf.writeFloat(intensity);
     }
 
+    // === 📦 ОБРАБОТЧИК НА КЛИЕНТЕ ===
     @SideOnly(Side.CLIENT)
     public static class Handler implements IMessageHandler<CameraShakePacket, IMessage> {
         @Override
-        public IMessage onMessage(CameraShakePacket message, MessageContext ctx) {
-            Minecraft.getMinecraft().addScheduledTask(() -> {
-                float shake = message.intensity * (Minecraft.getMinecraft().player.getRNG().nextFloat() - 0.5f) * 2;
-                Minecraft mc = Minecraft.getMinecraft();
-                if (mc.player != null) {
-                    mc.player.rotationPitch += shake * 0.5f;
-                    mc.player.rotationYaw += shake;
+        public IMessage onMessage(final CameraShakePacket message, final MessageContext ctx) {
+            Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+                @Override
+                public void run() {
+                    AtomicParasites.LOGGER.debug("[CameraShake] 📳 Packet RECEIVED! Intensity: {}", message.intensity);
+
+                    Minecraft mc = Minecraft.getMinecraft();
+                    if (mc.player != null) {
+                        // ✅ ОТДЕЛЬНЫЙ РАНДОМ ДЛЯ КАЖДОЙ ОСИ
+                        float shakeX = message.intensity * (mc.player.getRNG().nextFloat() - 0.5f) * 2;
+                        float shakeY = message.intensity * (mc.player.getRNG().nextFloat() - 0.5f) * 2;
+
+                        // ✅ ПРИМЕНЯЕМ ТРЯСКУ
+                        mc.player.rotationPitch += shakeX;
+                        mc.player.rotationYaw += shakeY;
+
+                        AtomicParasites.LOGGER.debug("[CameraShake] 🎮 Applied shake: Pitch={}, Yaw={}", shakeX, shakeY);
+                    }
                 }
             });
             return null;

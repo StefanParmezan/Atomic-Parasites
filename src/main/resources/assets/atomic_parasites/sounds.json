@@ -2,7 +2,7 @@
   "mob.player.fear_gasp": {
     "category": "hostile",
     "sounds": [
-      "mob/player/fear_gasp_01"
+      "atomic_parasites:mob/player/fear_gasp_01"
     ]
   }
 }
