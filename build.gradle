@@ -29,6 +29,8 @@ dependencies {
 	minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2859"
     implementation fg.deobf("curse.maven:mrcrayfish-furniture-mod-55438:3865259")
     implementation fg.deobf(files("libs/SRParasites-1.10.2.jar"))
+    implementation fg.deobf(files("libs/CreativeCore_v1.10.71_mc1.12.2.jar"))
+    implementation fg.deobf(files("libs/PlayerRevive_v1.2.40_mc1.12.2.jar"))
 }
 
 minecraft {

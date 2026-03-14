@@ -48,7 +48,6 @@ public class FaceOverlayHandler {
 
         AbstractClientPlayer player = (AbstractClientPlayer) mc.player;
 
-        // Обновляем менеджеры
         BloodEffectManager.update(player);
         WaterEffectManager.update(player);
         HealthOverlayManager.update(player);
@@ -56,7 +55,6 @@ public class FaceOverlayHandler {
         int screenWidth = event.getResolution().getScaledWidth();
         int screenHeight = event.getResolution().getScaledHeight();
 
-        // Позиция аватара (слева от хотбара)
         int hotbarLeft = screenWidth / 2 - 91;
         int hotbarTop = screenHeight - 22;
         int x = hotbarLeft - FACE_SIZE - MARGIN;
